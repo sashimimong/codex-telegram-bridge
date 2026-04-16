@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Codex Telegram Bridge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #f4f2ec;
+      --panel: #fffdf7;
+      --ink: #1f2a33;
+      --muted: #59636d;
+      --line: #d8d0c5;
+      --accent: #0c8b6f;
+      --accent-2: #f4a93a;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(244, 169, 58, 0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(12, 139, 111, 0.18), transparent 25%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 18px 80px;
+    }
+    .hero {
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 2rem;
+    }
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.9fr;
+      gap: 20px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(31, 42, 51, 0.06);
+    }
+    .panel h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.92rem;
+      margin: 12px 0 6px;
+    }
+    input, textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      font: inherit;
+    }
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 18px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+    .secondary {
+      background: var(--accent-2);
+      color: var(--ink);
+    }
+    .diagnostic {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #f8f6ef;
+      border: 1px solid var(--line);
+    }
+    .mono {
+      white-space: pre-wrap;
+      font-family: Consolas, monospace;
+      font-size: 0.88rem;
+    }
+    .hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    @media (max-width: 880px) {
+      .grid { grid-template-columns: 1fr; }
+      .two { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Codex Telegram Bridge</h1>
+      <p>Configure your Telegram bot, workspace, and Codex CLI connection from one local page.</p>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Bridge Setup</h2>
+        <label for="bot_name">Bot Name</label>
+        <input id="bot_name" />
+
+        <div class="two">
+          <div>
+            <label for="token">Telegram Bot Token</label>
+            <input id="token" />
+          </div>
+          <div>
+            <label for="allowed">Allowed User IDs</label>
+            <input id="allowed" placeholder="12345,67890" />
+          </div>
+        </div>
+
+        <div class="two">
+          <div>
+            <label for="workspace_path">Workspace Path</label>
+            <input id="workspace_path" />
+          </div>
+          <div>
+            <label for="codex_cli_path">Codex CLI Path (optional)</label>
+            <input id="codex_cli_path" />
+          </div>
+        </div>
+
+        <div class="two">
+          <div>
+            <label for="template">Default Template</label>
+            <select id="template"></select>
+          </div>
+          <div>
+            <label for="timeout_seconds">Timeout Seconds</label>
+            <input id="timeout_seconds" type="number" min="30" />
+          </div>
+        </div>
+
+        <label for="system_rules">System Rules</label>
+        <textarea id="system_rules"></textarea>
+
+        <label for="response_style">Response Style</label>
+        <textarea id="response_style"></textarea>
+
+        <label for="working_style">Working Style</label>
+        <textarea id="working_style"></textarea>
+
+        <label for="allowed_guidance">Allowed Guidance</label>
+        <textarea id="allowed_guidance"></textarea>
+
+        <label for="blocked_guidance">Blocked Guidance</label>
+        <textarea id="blocked_guidance"></textarea>
+
+        <div class="actions">
+          <button class="primary" id="saveBtn">Save Configuration</button>
+          <button class="secondary" id="workspaceBtn">Test Workspace</button>
+          <button class="secondary" id="restartBtn">Restart Bot</button>
+        </div>
+        <p class="hint" id="saveStatus"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Diagnostics</h2>
+        <div class="diagnostic">
+          <strong>Codex Installation</strong>
+          <div class="mono" id="installDiag">Loading...</div>
+        </div>
+        <div class="diagnostic">
+          <strong>Codex Auth</strong>
+          <div class="mono" id="authDiag">Loading...</div>
+        </div>
+        <div class="diagnostic">
+          <strong>Template Preset</strong>
+          <div class="mono" id="templateDiag">Select a template to preview.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    let templates = {};
+
+    function byId(id) {
+      return document.getElementById(id);
+    }
+
+    function diagText(diag) {
+      const lines = [`${diag.status.toUpperCase()}: ${diag.message}`];
+      for (const item of diag.details || []) {
+        lines.push(`- ${item}`);
+      }
+      return lines.join("\n");
+    }
+
+    function formState() {
+      return {
+        config: {
+          bot_name: byId("bot_name").value,
+          telegram_allowed_user_ids: byId("allowed").value,
+          codex_cli_path: byId("codex_cli_path").value,
+          workspace_path: byId("workspace_path").value,
+          default_template: byId("template").value,
+          system_rules: byId("system_rules").value,
+          response_style: byId("response_style").value,
+          working_style: byId("working_style").value,
+          allowed_guidance: byId("allowed_guidance").value,
+          blocked_guidance: byId("blocked_guidance").value,
+          timeout_seconds: Number(byId("timeout_seconds").value || 600),
+        },
+        secrets: {
+          telegram_bot_token: byId("token").value,
+        },
+      };
+    }
+
+    function applyTemplate(key) {
+      const preset = templates[key];
+      if (!preset) return;
+      byId("templateDiag").textContent =
+        `${preset.name}\n\nSystem Rules: ${preset.system_rules}\n\nResponse Style: ${preset.response_style}`;
+      if (!byId("system_rules").value.trim()) byId("system_rules").value = preset.system_rules;
+      if (!byId("response_style").value.trim()) byId("response_style").value = preset.response_style;
+      if (!byId("working_style").value.trim()) byId("working_style").value = preset.working_style;
+      if (!byId("allowed_guidance").value.trim()) byId("allowed_guidance").value = preset.allowed_guidance;
+      if (!byId("blocked_guidance").value.trim()) byId("blocked_guidance").value = preset.blocked_guidance;
+    }
+
+    async function loadState() {
+      const response = await fetch("/api/state");
+      const data = await response.json();
+      templates = data.templates || {};
+
+      const select = byId("template");
+      select.innerHTML = "";
+      Object.values(templates).forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.key;
+        option.textContent = item.name;
+        select.appendChild(option);
+      });
+
+      byId("bot_name").value = data.config.bot_name || "";
+      byId("token").value = data.secrets.telegram_bot_token || "";
+      byId("allowed").value = (data.config.telegram_allowed_user_ids || []).join(",");
+      byId("codex_cli_path").value = data.config.codex_cli_path || "";
+      byId("workspace_path").value = data.config.workspace_path || "";
+      byId("template").value = data.config.default_template || "assistant";
+      byId("system_rules").value = data.config.system_rules || "";
+      byId("response_style").value = data.config.response_style || "";
+      byId("working_style").value = data.config.working_style || "";
+      byId("allowed_guidance").value = data.config.allowed_guidance || "";
+      byId("blocked_guidance").value = data.config.blocked_guidance || "";
+      byId("timeout_seconds").value = data.config.timeout_seconds || 600;
+
+      byId("installDiag").textContent = diagText(data.diagnostics.install);
+      byId("authDiag").textContent = diagText(data.diagnostics.auth);
+      applyTemplate(byId("template").value);
+    }
+
+    byId("template").addEventListener("change", (event) => {
+      applyTemplate(event.target.value);
+    });
+
+    byId("saveBtn").addEventListener("click", async () => {
+      const response = await fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState()),
+      });
+      if (response.ok) {
+        byId("saveStatus").textContent = "Configuration saved.";
+        await loadState();
+      } else {
+        byId("saveStatus").textContent = "Failed to save configuration.";
+      }
+    });
+
+    byId("workspaceBtn").addEventListener("click", async () => {
+      const response = await fetch("/api/test-workspace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspace_path: byId("workspace_path").value }),
+      });
+      const data = await response.json();
+      byId("saveStatus").textContent = `Workspace exists=${data.exists}, is_dir=${data.is_dir}, path=${data.resolved}`;
+    });
+
+    byId("restartBtn").addEventListener("click", async () => {
+      const response = await fetch("/api/restart-bot", { method: "POST" });
+      byId("saveStatus").textContent = response.ok ? "Bot restart requested." : "Bot restart failed.";
+      await loadState();
+    });
+
+    loadState();
+  </script>
+</body>
+</html>
