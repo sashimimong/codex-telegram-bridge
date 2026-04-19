@@ -1,86 +1,377 @@
 # Codex Telegram Bridge
 
-Self-hosted Telegram bridge for **Codex CLI** on Windows.
+Windows PC에서 **Codex CLI**를 텔레그램 봇처럼 사용할 수 있게 연결해 주는 로컬 브리지입니다.
 
-## What v0.1 does
+이 프로젝트를 실행하면 내 컴퓨터에서 Codex가 돌아가고, 텔레그램으로 보낸 메시지를 받아서 Codex가 답한 뒤 다시 텔레그램으로 보내줍니다.
 
-- Supports **Telegram only**
-- Supports **Codex CLI only**
-- Runs on your own laptop/desktop
-- Lets you configure the bridge from a local browser UI
-- Stores config locally
+## 이 프로젝트로 할 수 있는 일
 
-## Quick Start
+- 텔레그램에서 Codex에게 질문하기
+- 내 PC의 특정 작업 폴더를 대상으로 파일 읽기, 코드 확인, 작업 진행
+- 로컬 웹 설정 화면에서 봇 토큰, 허용 사용자, 작업 폴더, 템플릿 등을 한 번에 관리
+- 여러 용도에 맞는 템플릿으로 답변 스타일 빠르게 전환
 
-### 1. Install
+## 먼저 알아둘 점
 
-From PowerShell:
+- 이 프로젝트는 **내 컴퓨터에서 직접 실행**됩니다.
+- 텔레그램 봇 응답도 결국 **내 PC에 설치된 Codex CLI**가 처리합니다.
+- 따라서 PC가 꺼져 있거나, 브리지가 꺼져 있거나, Codex 로그인 상태가 아니면 봇이 응답하지 않습니다.
+- 텔레그램 봇 토큰 같은 비밀값은 저장소에 커밋하지 않고, 로컬 런타임 파일에만 저장되도록 설계되어 있습니다.
+
+## 준비물
+
+아래 항목이 먼저 준비되어 있어야 합니다.
+
+1. Windows PC
+2. Python 3.11
+3. Codex 앱 또는 Codex CLI를 사용할 수 있는 환경
+4. 텔레그램 계정
+5. BotFather로 만든 텔레그램 봇
+
+## 가장 쉬운 시작 순서
+
+처음 쓰는 분은 아래 순서대로 진행하면 됩니다.
+
+1. 이 저장소를 내려받습니다.
+2. PowerShell에서 설치 스크립트를 실행합니다.
+3. 브라우저에서 로컬 설정 화면을 엽니다.
+4. 텔레그램 봇 토큰, 내 텔레그램 숫자 ID, 작업 폴더를 입력합니다.
+5. Codex 연결 상태가 정상인지 확인합니다.
+6. 텔레그램에서 봇에게 메시지를 보내 테스트합니다.
+
+아래에 각 단계를 아주 자세히 설명해 두었습니다.
+
+## 1. 저장소 받기
+
+PowerShell에서 원하는 폴더로 이동한 뒤 아래처럼 실행합니다.
+
+```powershell
+git clone https://github.com/sashimimong/codex-telegram-bridge.git
+cd codex-telegram-bridge
+```
+
+이미 받아둔 상태라면 이 단계는 건너뛰어도 됩니다.
+
+## 2. Python 3.11 확인
+
+PowerShell에서 아래 명령으로 Python이 있는지 확인합니다.
+
+```powershell
+py -3.11 --version
+```
+
+정상이라면 `Python 3.11.x` 형태로 보입니다.
+
+만약 실행되지 않으면 Python 3.11을 먼저 설치해야 합니다.
+
+## 3. 설치 및 실행
+
+프로젝트 루트에서 아래 명령을 실행합니다.
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\install.ps1
 ```
 
-### 2. Open the local UI
+이 스크립트는 아래 일을 자동으로 처리합니다.
 
-Go to:
+- `.venv` 가상환경 생성
+- `pip` 업데이트
+- 프로젝트 의존성 설치
+- 로컬 웹 서버 실행
+
+정상적으로 실행되면 마지막에 아래 주소로 접속하라는 안내가 나옵니다.
 
 ```text
 http://127.0.0.1:8765
 ```
 
-### 3. Fill in setup
+## 4. 로컬 설정 화면 열기
 
-- `Telegram Bot Token`
-- `Allowed User IDs`
-- `Workspace Path`
-- `Bot Name`
-- Template preset
+브라우저에서 아래 주소를 엽니다.
 
-The app will auto-detect `codex.exe` when possible.
+```text
+http://127.0.0.1:8765
+```
 
-### 4. Start using the bot
+이 화면이 이 프로젝트의 실제 설정 화면입니다.
 
-Send a message to your Telegram bot from an allowed Telegram account.
+여기서 봇 이름, 텔레그램 토큰, 허용 사용자 ID, 작업 폴더, 템플릿 등을 설정합니다.
 
-## Commands
+## 5. 텔레그램 봇 토큰 준비
 
-- `/start` - show bridge status
-- `/status` - diagnostics
-- `/template` - current template
-- `/reset` - clear session history
+텔레그램에서 `@BotFather`를 열고 봇을 만든 뒤 받은 토큰을 복사합니다.
 
-## Security Notes
+토큰 예시는 아래처럼 생겼습니다.
 
-- Only allowed Telegram user IDs can use the bot.
-- The selected workspace should be explicit and limited.
-- The bridge runs Codex CLI on your machine, so treat it like a local automation tool.
-- Keep your Telegram bot token private.
+```text
+123456789:AA...
+```
 
-## Troubleshooting
+이 값을 설정 화면의 **텔레그램 봇 토큰** 칸에 그대로 붙여 넣습니다.
 
-### Codex not detected
+주의할 점:
 
-- Confirm `codex.exe` is installed
-- Try setting the explicit executable path in the UI
-- Re-run diagnostics from `/status`
+- 앞뒤 공백을 넣지 않는 것이 좋습니다.
+- 이 토큰은 남에게 주면 안 됩니다.
+- 저장소 파일에 직접 적지 말고, 설정 화면에만 입력하세요.
 
-### Codex auth check fails
+## 6. 내 텔레그램 숫자 ID 확인
 
-- Open Codex locally and confirm you're signed in
-- Some Codex builds do not expose auth status consistently; the bridge will report that separately
+봇을 아무나 쓰면 안 되기 때문에, 누가 이 봇을 사용할 수 있는지 숫자 ID로 제한합니다.
 
-### Telegram bot does not respond
+내 텔레그램 숫자 ID를 확인하는 쉬운 방법:
 
-- Verify the bot token
-- Verify your Telegram user ID is in the allowed list
-- Check the local UI diagnostics panel
+1. 텔레그램에서 `@userinfobot` 또는 비슷한 ID 확인 봇을 엽니다.
+2. `/start`를 보냅니다.
+3. 응답에 나오는 `Id: 123456789` 형태의 숫자를 확인합니다.
 
-## Current Scope
+이 숫자를 설정 화면의 **허용할 사용자 ID** 칸에 넣습니다.
 
-This release is intentionally narrow:
+여러 명을 허용하고 싶다면 쉼표로 구분합니다.
 
-- Windows first
-- Codex CLI only
-- Telegram only
-- local web UI instead of a full desktop installer
+예시:
+
+```text
+123456789,987654321
+```
+
+## 7. 작업 폴더 경로 입력
+
+설정 화면의 **작업 폴더 경로**에는 Codex가 실제로 볼 폴더를 넣습니다.
+
+예시:
+
+```text
+D:\projects\my-app
+```
+
+이 경로는 아주 중요합니다.
+
+- Codex는 이 폴더를 기준으로 파일을 읽고 작업합니다.
+- 텔레그램에서 "이 프로젝트 설명해줘", "이 코드 수정해줘" 같은 요청을 보내면 이 폴더 안을 기준으로 답합니다.
+- 따라서 너무 넓은 폴더보다, 실제 작업하려는 프로젝트 폴더를 정확히 지정하는 것이 좋습니다.
+
+권장 예시:
+
+- `D:\projects\my-app`
+- `C:\work\service-api`
+
+비권장 예시:
+
+- `D:\`
+- `C:\Users`
+
+## 8. Codex CLI 경로 입력 여부
+
+설정 화면에는 **Codex CLI 경로(선택)** 칸이 있습니다.
+
+이 값은 보통 비워 둬도 됩니다. 브리지가 가능한 경로를 자동으로 찾습니다.
+
+다만 자동 감지가 잘 안 되면 직접 실행 파일 경로를 넣을 수 있습니다.
+
+예시:
+
+```text
+C:\Users\사용자이름\AppData\Roaming\npm\codex.cmd
+```
+
+또는 환경에 따라 다른 경로일 수 있습니다.
+
+중요한 점:
+
+- Windows의 `WindowsApps` 쪽 실행 파일은 바로 실행이 안 되는 경우가 있습니다.
+- 그럴 때는 npm 쪽 `codex.cmd` 또는 실제 실행 가능한 경로를 넣는 것이 더 안정적입니다.
+
+## 9. 템플릿 선택
+
+설정 화면에서 템플릿을 고르면 아래 스타일 항목이 자동으로 채워집니다.
+
+- 시스템 규칙
+- 응답 스타일
+- 작업 스타일
+- 허용 가이드
+- 제한 가이드
+
+즉, 템플릿은 단순한 이름만 바꾸는 것이 아니라, **봇의 말투와 행동 기준 전체를 바꾸는 설정 묶음**입니다.
+
+예를 들어:
+
+- 기본 비서: 일반적인 질문 응답
+- 개발 도우미: 코드, 버그, 프로젝트 설명
+- 리서치 정리: 자료 요약, 비교, 정리
+- 쇼핑 추천: 제품 비교와 선택
+- 여행 플래너: 일정 정리
+- 글쓰기 도우미: 문장 다듬기
+- 공부 코치: 개념 설명과 학습 보조
+- 업무 보조: 회의, 할 일, 계획 정리
+- 코드 리뷰: 리스크 중심 분석
+
+처음에는 **개발 도우미** 또는 **기본 비서**로 시작하는 것을 추천합니다.
+
+## 10. Codex 연결 상태 확인
+
+설정 화면 오른쪽에는 진단 영역이 있습니다.
+
+여기서 보통 아래 항목을 확인합니다.
+
+- Codex CLI 설치 상태
+- Codex 로그인 상태
+- 현재 템플릿 미리보기
+
+정상적으로 사용하려면 최소한 아래가 충족되는 편이 좋습니다.
+
+1. Codex CLI 실행 가능
+2. Codex 로그인 가능
+3. 작업 폴더 접근 가능
+
+만약 Codex 로그인 상태 확인이 완벽하게 표시되지 않더라도, 실제 대화가 잘 되면 사용 가능한 경우가 있습니다. 다만 응답이 계속 실패하면 Codex 앱 또는 CLI 로그인 상태를 먼저 확인하세요.
+
+## 11. 실제로 텔레그램에서 테스트하기
+
+이제 텔레그램에서 내가 만든 봇을 열고 메시지를 보내면 됩니다.
+
+처음에는 아래 순서로 테스트하는 것이 좋습니다.
+
+1. `/start`
+2. `/status`
+3. 일반 메시지 한 줄
+
+예시:
+
+```text
+안녕
+```
+
+또는 작업 폴더를 지정했다면:
+
+```text
+이 프로젝트 구조를 설명해줘
+```
+
+정상이라면 브리지가 Codex에 요청을 보내고, 잠시 뒤 텔레그램으로 답이 돌아옵니다.
+
+## 12. 자주 쓰는 텔레그램 명령어
+
+- `/start` : 현재 브리지 정보와 기본 안내 확인
+- `/status` : Codex 연결과 설정 상태 진단
+- `/template` : 현재 적용된 템플릿 확인
+- `/reset` : 세션 대화 기록 초기화
+
+`/reset`은 이전 대화 맥락이 꼬였을 때 특히 유용합니다.
+
+## 13. 사용 예시
+
+### 일반 질문
+
+```text
+오늘 할 일 정리해줘
+```
+
+### 프로젝트 설명
+
+```text
+이 프로젝트가 무슨 역할인지 설명해줘
+```
+
+### 코드 작업
+
+```text
+현재 에러 원인 찾아줘
+```
+
+### 문장 정리
+
+```text
+이 문장을 더 자연스럽게 고쳐줘
+```
+
+### 추천 요청
+
+```text
+강남역 근처 점심 맛집 추천해줘
+```
+
+## 14. 종료 방법
+
+브리지를 끄고 싶다면 설치 스크립트를 실행한 PowerShell 창에서 `Ctrl + C`를 누르면 됩니다.
+
+다시 사용하고 싶을 때는 같은 방식으로 다시 실행하면 됩니다.
+
+```powershell
+.\scripts\install.ps1
+```
+
+이미 가상환경과 패키지가 준비된 상태라도, 이 스크립트를 다시 실행해도 괜찮습니다.
+
+## 15. 문제 해결
+
+### 1) 텔레그램에서 봇이 응답하지 않을 때
+
+아래를 순서대로 확인하세요.
+
+1. PowerShell 창이 아직 켜져 있는지
+2. `http://127.0.0.1:8765` 설정 화면이 열리는지
+3. 텔레그램 봇 토큰이 맞는지
+4. 내 숫자 ID가 허용 사용자 ID에 들어 있는지
+5. Codex CLI가 실제로 실행 가능한지
+6. Codex 로그인 상태인지
+
+### 2) Codex CLI를 찾았는데 실행할 수 없다고 나올 때
+
+이 경우는 자동 감지가 Windows의 실행 불가 경로를 잡았을 가능성이 있습니다.
+
+해결 방법:
+
+1. Codex CLI 경로를 비워 두고 다시 확인
+2. 직접 실행 가능한 `codex.cmd` 또는 실행 파일 경로 입력
+3. Codex가 설치된 방식이 npm인지 앱 번들인지 확인
+
+### 3) 텔레그램에서는 "작업 중"만 뜨고 답이 안 올 때
+
+보통 아래 중 하나입니다.
+
+- Codex 로그인 문제
+- 작업 폴더 권한 문제
+- CLI 경로 문제
+- 외부 요청 실패
+
+먼저 `/status`를 보내고, 설정 화면의 진단 메시지도 함께 확인하세요.
+
+### 4) 프로젝트 폴더를 읽지 못한다고 할 때
+
+작업 폴더 경로가 정확한지 확인하세요.
+
+예를 들어 실제 프로젝트가 `D:\projects\my-app`에 있는데 `D:\projects`만 넣으면 의도와 다르게 동작할 수 있습니다.
+
+가급적 **정확한 프로젝트 루트 경로**를 넣는 것이 좋습니다.
+
+## 16. 보안 주의사항
+
+이 프로젝트는 공개 저장소로 써도 되지만, 아래는 꼭 지켜야 합니다.
+
+1. 봇 토큰을 README나 코드 파일에 직접 적지 않기
+2. `.bridge_data/` 같은 로컬 런타임 파일을 커밋하지 않기
+3. `.run/` 같은 로그 폴더를 커밋하지 않기
+4. 허용 사용자 ID에 본인이나 허용할 사람만 넣기
+5. 작업 폴더를 꼭 필요한 범위로만 제한하기
+
+## 17. 다시 시작할 때 가장 짧은 요약
+
+매번 아래만 기억하면 됩니다.
+
+1. 프로젝트 폴더로 이동
+2. `.\scripts\install.ps1` 실행
+3. `http://127.0.0.1:8765` 열기
+4. 토큰, 사용자 ID, 작업 폴더 확인
+5. 텔레그램에서 메시지 보내기
+
+## 현재 범위
+
+현재 버전은 의도적으로 범위를 좁게 잡고 있습니다.
+
+- Windows 우선
+- Telegram 전용
+- Codex CLI 전용
+- 로컬 웹 UI 기반
+- 로컬 저장 방식
