@@ -7,6 +7,7 @@ from .config_store import ConfigStore
 from .models import BridgeConfig, RunResult, SessionContext
 from .provider_base import AgentProvider
 from .templates import get_template
+from .translation import contains_hangul, translate_to_english
 
 
 @dataclass
@@ -32,7 +33,14 @@ class BridgeRuntime:
     def _build_prompt(self, config: BridgeConfig, state: SessionState, user_prompt: str, chat_id: str, user_id: str) -> tuple[str, SessionContext]:
         template = get_template(config.default_template)
         merged_history = state.history[-config.max_history_messages :]
+        translated_user_prompt = translate_to_english(user_prompt) if contains_hangul(user_prompt) else user_prompt
         lines = [
+            "Critical Rules:",
+            "- Always answer in Korean unless the user explicitly requests another language.",
+            "- Return only the final user-facing answer.",
+            "- Never include startup logs, warnings, HTML, telemetry output, or raw tool noise.",
+            "- If information is missing, explain that briefly in Korean.",
+            "",
             f"Bot Name: {config.bot_name}",
             f"Template: {template.name}",
             f"System Rules: {config.system_rules or template.system_rules}",
@@ -52,10 +60,13 @@ class BridgeRuntime:
         lines.extend(
             [
                 "",
-                "Current user message:",
+                "Current user message (original):",
                 user_prompt,
                 "",
-                "Return a plain-text answer suitable for a Telegram message.",
+                "Current user message (English translation for compatibility):",
+                translated_user_prompt,
+                "",
+                "Return a plain-text Korean answer suitable for a Telegram message.",
             ]
         )
         session_context = SessionContext(

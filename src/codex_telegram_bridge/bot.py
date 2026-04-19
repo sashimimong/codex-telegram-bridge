@@ -32,8 +32,8 @@ class TelegramBridgeService:
             return
         await update.message.reply_text(
             f"{config.bot_name}\n\n"
-            "Use /status to run diagnostics.\n"
-            "Use /reset to clear the current session."
+            "/status 로 연결 상태를 확인할 수 있습니다.\n"
+            "/reset 으로 현재 대화 기록을 초기화할 수 있습니다."
         )
 
     async def _cmd_reset(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -41,13 +41,13 @@ class TelegramBridgeService:
             return
         chat_id = str(update.effective_chat.id)
         self.runtime.reset_session(chat_id)
-        await update.message.reply_text("Session history cleared.")
+        await update.message.reply_text("대화 기록을 초기화했습니다.")
 
     async def _cmd_template(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if not update.message:
             return
         config = self.config_store.load_config()
-        await update.message.reply_text(f"Current template: {config.default_template}")
+        await update.message.reply_text(f"현재 템플릿: {config.default_template}")
 
     async def _cmd_status(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if not update.message:
@@ -58,14 +58,14 @@ class TelegramBridgeService:
         auth_check = await provider.check_auth()
 
         lines = [
-            f"Bot: {config.bot_name}",
-            f"Workspace: {config.workspace_path or '(not set)'}",
-            f"Template: {config.default_template}",
+            f"봇 이름: {config.bot_name}",
+            f"작업 폴더: {config.workspace_path or '(설정 안 됨)'}",
+            f"기본 템플릿: {config.default_template}",
             "",
-            f"Codex install: {install_check.status} - {install_check.message}",
+            f"Codex 설치: {install_check.status} - {install_check.message}",
             *[f"- {item}" for item in install_check.details],
             "",
-            f"Codex auth: {auth_check.status} - {auth_check.message}",
+            f"Codex 로그인: {auth_check.status} - {auth_check.message}",
             *[f"- {item}" for item in auth_check.details],
         ]
         await update.message.reply_text("\n".join(lines))
@@ -76,22 +76,22 @@ class TelegramBridgeService:
 
         user_id = update.effective_user.id
         if not self._is_allowed(user_id):
-            await update.message.reply_text("You are not allowed to use this bot.")
+            await update.message.reply_text("이 봇을 사용할 권한이 없습니다.")
             return
 
         chat_id = str(update.effective_chat.id)
         if self.runtime.is_busy(chat_id):
-            await update.message.reply_text("Still working on the previous request for this chat.")
+            await update.message.reply_text("이 채팅의 이전 요청을 아직 처리 중입니다.")
             return
 
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-        await update.message.reply_text("Working on it...")
+        await update.message.reply_text("처리 중입니다...")
 
         result = await self.runtime.handle_user_message(chat_id, str(user_id), update.message.text)
         if result.ok:
             await update.message.reply_text(result.output[:4000])
         else:
-            message = result.error or result.output or "Request failed."
+            message = result.error or result.output or "요청 처리에 실패했습니다."
             await update.message.reply_text(message[:4000])
 
     async def start_if_configured(self) -> str:

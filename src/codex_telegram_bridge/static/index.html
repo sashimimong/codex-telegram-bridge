@@ -1,39 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>Codex Telegram Bridge</title>
+  <title>코덱스 텔레그램 브리지</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
-      --bg: #f4f2ec;
-      --panel: #fffdf7;
-      --ink: #1f2a33;
-      --muted: #59636d;
-      --line: #d8d0c5;
-      --accent: #0c8b6f;
-      --accent-2: #f4a93a;
+      --bg: #f7f1e7;
+      --panel: rgba(255, 252, 246, 0.92);
+      --panel-strong: #fffdf9;
+      --ink: #1d2a35;
+      --muted: #5f6f78;
+      --line: #d8cdbb;
+      --accent: #147d64;
+      --accent-2: #e0a74b;
+      --accent-soft: rgba(20, 125, 100, 0.1);
+      --danger-soft: rgba(184, 72, 55, 0.08);
+      --shadow: 0 18px 40px rgba(53, 43, 24, 0.08);
     }
     body {
       margin: 0;
-      font-family: "Segoe UI", system-ui, sans-serif;
+      font-family: "Pretendard", "Segoe UI", system-ui, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(244, 169, 58, 0.18), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(12, 139, 111, 0.18), transparent 25%),
+        radial-gradient(circle at top left, rgba(224, 167, 75, 0.2), transparent 25%),
+        radial-gradient(circle at right 20%, rgba(20, 125, 100, 0.14), transparent 28%),
         var(--bg);
     }
     .wrap {
-      max-width: 1080px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 32px 18px 80px;
+      padding: 28px 18px 72px;
     }
     .hero {
-      margin-bottom: 24px;
+      margin-bottom: 22px;
+      padding: 28px;
+      border: 1px solid rgba(216, 205, 187, 0.75);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 253, 249, 0.96), rgba(248, 242, 232, 0.9));
+      box-shadow: var(--shadow);
     }
     h1 {
-      margin: 0 0 10px;
-      font-size: 2rem;
+      margin: 0 0 8px;
+      font-size: 2.1rem;
+      letter-spacing: -0.03em;
     }
     p {
       color: var(--muted);
@@ -47,30 +57,41 @@
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 20px;
-      box-shadow: 0 10px 25px rgba(31, 42, 51, 0.06);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
     }
     .panel h2 {
       margin-top: 0;
-      font-size: 1.1rem;
+      margin-bottom: 8px;
+      font-size: 1.18rem;
+      letter-spacing: -0.02em;
     }
     label {
       display: block;
       font-size: 0.92rem;
+      font-weight: 600;
       margin: 12px 0 6px;
     }
     input, textarea, select {
       width: 100%;
       box-sizing: border-box;
-      padding: 11px 12px;
+      padding: 12px 13px;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: white;
+      border-radius: 14px;
+      background: var(--panel-strong);
       font: inherit;
+      color: var(--ink);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(20, 125, 100, 0.12);
     }
     textarea {
-      min-height: 88px;
+      min-height: 84px;
       resize: vertical;
     }
     .two {
@@ -78,32 +99,43 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
     .actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      margin-top: 18px;
+      margin-top: 20px;
     }
     button {
       border: 0;
       border-radius: 999px;
-      padding: 11px 18px;
+      padding: 12px 18px;
       font: inherit;
+      font-weight: 700;
       cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
     }
     .primary {
       background: var(--accent);
       color: white;
     }
     .secondary {
-      background: var(--accent-2);
+      background: rgba(224, 167, 75, 0.18);
+      border: 1px solid rgba(224, 167, 75, 0.45);
       color: var(--ink);
     }
     .diagnostic {
       margin-top: 12px;
-      padding: 12px;
-      border-radius: 14px;
-      background: #f8f6ef;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 251, 244, 0.82);
       border: 1px solid var(--line);
     }
     .mono {
@@ -112,97 +144,182 @@
       font-size: 0.88rem;
     }
     .hint {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--muted);
+    }
+    .section-copy {
+      margin: 0 0 16px;
+      font-size: 0.92rem;
+    }
+    .field {
+      margin-bottom: 8px;
+    }
+    .field small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .status-banner {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(20, 125, 100, 0.12), rgba(224, 167, 75, 0.14));
+      border: 1px solid rgba(20, 125, 100, 0.16);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .status-banner strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(216, 205, 187, 0.9);
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    .diagnostic strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.98rem;
+    }
+    .danger {
+      background: var(--danger-soft);
+      border-color: rgba(184, 72, 55, 0.2);
+    }
+    .success {
+      background: var(--accent-soft);
     }
     @media (max-width: 880px) {
       .grid { grid-template-columns: 1fr; }
       .two { grid-template-columns: 1fr; }
+      .three { grid-template-columns: 1fr; }
+      .hero { padding: 22px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
-      <h1>Codex Telegram Bridge</h1>
-      <p>Configure your Telegram bot, workspace, and Codex CLI connection from one local page.</p>
+      <h1>코덱스 텔레그램 브리지</h1>
+      <p>텔레그램 봇, 작업 폴더, Codex CLI 연결을 이 화면 한 곳에서 설정합니다.</p>
+      <div class="pill-row">
+        <div class="pill">1. 봇 토큰 입력</div>
+        <div class="pill">2. 내 Telegram ID 입력</div>
+        <div class="pill">3. 작업 폴더 지정</div>
+        <div class="pill">4. 저장 후 봇 테스트</div>
+      </div>
     </div>
 
     <div class="grid">
       <section class="panel">
-        <h2>Bridge Setup</h2>
-        <label for="bot_name">Bot Name</label>
-        <input id="bot_name" />
+        <h2>브리지 설정</h2>
+        <p class="section-copy">왼쪽만 채워도 기본 동작은 됩니다. 막히면 오른쪽 진단에서 Codex 설치와 로그인 상태를 먼저 보세요.</p>
+
+        <div class="status-banner">
+          <strong>빠른 안내</strong>
+          `Allowed User IDs`에는 내 텔레그램 숫자 ID를 넣고, `Workspace Path`에는 Codex가 작업할 폴더를 넣으면 됩니다.
+        </div>
+
+        <div class="field">
+          <label for="bot_name">봇 이름</label>
+          <input id="bot_name" placeholder="예: jhsoft_bot" />
+          <small>텔레그램에서 보거나 구분할 이름입니다.</small>
+        </div>
 
         <div class="two">
-          <div>
-            <label for="token">Telegram Bot Token</label>
-            <input id="token" />
+          <div class="field">
+            <label for="token">텔레그램 봇 토큰</label>
+            <input id="token" type="password" placeholder="BotFather가 준 토큰" />
+            <small>`@BotFather`에서 받은 긴 문자열을 그대로 붙여넣으세요.</small>
           </div>
-          <div>
-            <label for="allowed">Allowed User IDs</label>
-            <input id="allowed" placeholder="12345,67890" />
+          <div class="field">
+            <label for="allowed">허용할 사용자 ID</label>
+            <input id="allowed" placeholder="예: 123456789 또는 123,456" />
+            <small>내 텔레그램 숫자 ID입니다. 여러 명이면 쉼표로 구분합니다.</small>
           </div>
         </div>
 
         <div class="two">
-          <div>
-            <label for="workspace_path">Workspace Path</label>
-            <input id="workspace_path" />
+          <div class="field">
+            <label for="workspace_path">작업 폴더 경로</label>
+            <input id="workspace_path" placeholder="예: D:\projects\tele-bot" />
+            <small>Codex가 파일을 읽고 작업할 실제 폴더입니다.</small>
           </div>
-          <div>
-            <label for="codex_cli_path">Codex CLI Path (optional)</label>
-            <input id="codex_cli_path" />
+          <div class="field">
+            <label for="codex_cli_path">Codex CLI 경로 (선택)</label>
+            <input id="codex_cli_path" placeholder="비워두면 자동 탐지" />
+            <small>보통 비워둬도 됩니다. 자동 탐지가 안 될 때만 `codex.cmd` 또는 `codex.exe` 경로를 넣으세요.</small>
           </div>
         </div>
 
-        <div class="two">
-          <div>
-            <label for="template">Default Template</label>
+        <div class="three">
+          <div class="field">
+            <label for="template">기본 템플릿</label>
             <select id="template"></select>
+            <small>봇의 기본 말투와 작업 스타일입니다.</small>
           </div>
-          <div>
-            <label for="timeout_seconds">Timeout Seconds</label>
+          <div class="field">
+            <label for="timeout_seconds">응답 제한 시간(초)</label>
             <input id="timeout_seconds" type="number" min="30" />
+            <small>기본값은 600초입니다.</small>
+          </div>
+          <div class="field">
+            <label for="show_token">토큰 보기</label>
+            <select id="show_token">
+              <option value="hidden">가리기</option>
+              <option value="visible">보이기</option>
+            </select>
+            <small>현재 입력한 토큰을 잠깐 확인할 때만 켜세요.</small>
           </div>
         </div>
 
-        <label for="system_rules">System Rules</label>
+        <label for="system_rules">시스템 규칙</label>
         <textarea id="system_rules"></textarea>
 
-        <label for="response_style">Response Style</label>
+        <label for="response_style">응답 스타일</label>
         <textarea id="response_style"></textarea>
 
-        <label for="working_style">Working Style</label>
+        <label for="working_style">작업 스타일</label>
         <textarea id="working_style"></textarea>
 
-        <label for="allowed_guidance">Allowed Guidance</label>
+        <label for="allowed_guidance">허용 가이드</label>
         <textarea id="allowed_guidance"></textarea>
 
-        <label for="blocked_guidance">Blocked Guidance</label>
+        <label for="blocked_guidance">제한 가이드</label>
         <textarea id="blocked_guidance"></textarea>
 
         <div class="actions">
-          <button class="primary" id="saveBtn">Save Configuration</button>
-          <button class="secondary" id="workspaceBtn">Test Workspace</button>
-          <button class="secondary" id="restartBtn">Restart Bot</button>
+          <button class="primary" id="saveBtn">설정 저장</button>
+          <button class="secondary" id="workspaceBtn">폴더 확인</button>
+          <button class="secondary" id="restartBtn">봇 다시 시작</button>
         </div>
         <p class="hint" id="saveStatus"></p>
       </section>
 
       <section class="panel">
-        <h2>Diagnostics</h2>
+        <h2>연결 진단</h2>
+        <p class="section-copy">여기가 모두 정상이어야 텔레그램에서 요청을 보냈을 때 실제로 Codex가 답할 수 있습니다.</p>
         <div class="diagnostic">
-          <strong>Codex Installation</strong>
-          <div class="mono" id="installDiag">Loading...</div>
+          <strong>Codex CLI 설치 상태</strong>
+          <div class="mono" id="installDiag">불러오는 중...</div>
         </div>
         <div class="diagnostic">
-          <strong>Codex Auth</strong>
-          <div class="mono" id="authDiag">Loading...</div>
+          <strong>Codex 로그인 상태</strong>
+          <div class="mono" id="authDiag">불러오는 중...</div>
         </div>
         <div class="diagnostic">
-          <strong>Template Preset</strong>
-          <div class="mono" id="templateDiag">Select a template to preview.</div>
+          <strong>템플릿 미리보기</strong>
+          <div class="mono" id="templateDiag">템플릿을 고르면 설명이 여기 표시됩니다.</div>
         </div>
       </section>
     </div>
@@ -216,7 +333,12 @@
     }
 
     function diagText(diag) {
-      const lines = [`${diag.status.toUpperCase()}: ${diag.message}`];
+      const statusMap = {
+        ok: "정상",
+        warning: "주의",
+        error: "오류",
+      };
+      const lines = [`${statusMap[diag.status] || diag.status}: ${diag.message}`];
       for (const item of diag.details || []) {
         lines.push(`- ${item}`);
       }
@@ -244,16 +366,16 @@
       };
     }
 
-    function applyTemplate(key) {
+    function applyTemplate(key, overwriteFields = false) {
       const preset = templates[key];
       if (!preset) return;
       byId("templateDiag").textContent =
-        `${preset.name}\n\nSystem Rules: ${preset.system_rules}\n\nResponse Style: ${preset.response_style}`;
-      if (!byId("system_rules").value.trim()) byId("system_rules").value = preset.system_rules;
-      if (!byId("response_style").value.trim()) byId("response_style").value = preset.response_style;
-      if (!byId("working_style").value.trim()) byId("working_style").value = preset.working_style;
-      if (!byId("allowed_guidance").value.trim()) byId("allowed_guidance").value = preset.allowed_guidance;
-      if (!byId("blocked_guidance").value.trim()) byId("blocked_guidance").value = preset.blocked_guidance;
+        `${preset.name}\n\n시스템 규칙: ${preset.system_rules}\n\n응답 스타일: ${preset.response_style}\n\n작업 스타일: ${preset.working_style}`;
+      if (overwriteFields || !byId("system_rules").value.trim()) byId("system_rules").value = preset.system_rules;
+      if (overwriteFields || !byId("response_style").value.trim()) byId("response_style").value = preset.response_style;
+      if (overwriteFields || !byId("working_style").value.trim()) byId("working_style").value = preset.working_style;
+      if (overwriteFields || !byId("allowed_guidance").value.trim()) byId("allowed_guidance").value = preset.allowed_guidance;
+      if (overwriteFields || !byId("blocked_guidance").value.trim()) byId("blocked_guidance").value = preset.blocked_guidance;
     }
 
     async function loadState() {
@@ -286,10 +408,19 @@
       byId("installDiag").textContent = diagText(data.diagnostics.install);
       byId("authDiag").textContent = diagText(data.diagnostics.auth);
       applyTemplate(byId("template").value);
+
+      byId("installDiag").parentElement.classList.toggle("success", data.diagnostics.install.status === "ok");
+      byId("installDiag").parentElement.classList.toggle("danger", data.diagnostics.install.status === "error");
+      byId("authDiag").parentElement.classList.toggle("success", data.diagnostics.auth.status === "ok");
+      byId("authDiag").parentElement.classList.toggle("danger", data.diagnostics.auth.status === "error");
     }
 
     byId("template").addEventListener("change", (event) => {
-      applyTemplate(event.target.value);
+      applyTemplate(event.target.value, true);
+    });
+
+    byId("show_token").addEventListener("change", (event) => {
+      byId("token").type = event.target.value === "visible" ? "text" : "password";
     });
 
     byId("saveBtn").addEventListener("click", async () => {
@@ -299,10 +430,10 @@
         body: JSON.stringify(formState()),
       });
       if (response.ok) {
-        byId("saveStatus").textContent = "Configuration saved.";
+        byId("saveStatus").textContent = "설정을 저장했습니다.";
         await loadState();
       } else {
-        byId("saveStatus").textContent = "Failed to save configuration.";
+        byId("saveStatus").textContent = "설정 저장에 실패했습니다.";
       }
     });
 
@@ -313,12 +444,12 @@
         body: JSON.stringify({ workspace_path: byId("workspace_path").value }),
       });
       const data = await response.json();
-      byId("saveStatus").textContent = `Workspace exists=${data.exists}, is_dir=${data.is_dir}, path=${data.resolved}`;
+      byId("saveStatus").textContent = `폴더 확인: exists=${data.exists}, is_dir=${data.is_dir}, path=${data.resolved}`;
     });
 
     byId("restartBtn").addEventListener("click", async () => {
       const response = await fetch("/api/restart-bot", { method: "POST" });
-      byId("saveStatus").textContent = response.ok ? "Bot restart requested." : "Bot restart failed.";
+      byId("saveStatus").textContent = response.ok ? "봇 재시작을 요청했습니다." : "봇 재시작에 실패했습니다.";
       await loadState();
     });
 

@@ -16,11 +16,95 @@ class CodexCLIProvider(AgentProvider):
     def resolve_executable(self) -> str:
         if self.config.codex_cli_path:
             return self.config.codex_cli_path
-        return shutil.which("codex") or ""
+        codex_cmd = shutil.which("codex.cmd")
+        candidates = [
+            self._resolve_npm_bundled_exe(codex_cmd) if codex_cmd else None,
+            codex_cmd,
+            shutil.which("codex.exe"),
+            shutil.which("codex"),
+        ]
+        valid_candidates = [candidate for candidate in candidates if candidate]
+        preferred = [
+            candidate
+            for candidate in valid_candidates
+            if "WindowsApps" not in str(Path(candidate))
+        ]
+        return (preferred or valid_candidates or [""])[0]
+
+    def _resolve_npm_bundled_exe(self, codex_cmd: str) -> str:
+        cmd_path = Path(codex_cmd)
+        bundled = (
+            cmd_path.parent
+            / "node_modules"
+            / "@openai"
+            / "codex"
+            / "node_modules"
+            / "@openai"
+            / "codex-win32-x64"
+            / "vendor"
+            / "x86_64-pc-windows-msvc"
+            / "codex"
+            / "codex.exe"
+        )
+        return str(bundled) if bundled.exists() else ""
 
     def build_run_command(self, prompt: str) -> list[str]:
         exe = self.resolve_executable()
-        return [exe, "exec", prompt]
+        return self._build_command(exe, "exec")
+
+    def _build_command(self, exe: str, *args: str) -> list[str]:
+        # Global npm installs on Windows often expose Codex via codex.cmd.
+        if exe.lower().endswith((".cmd", ".bat")):
+            return ["cmd.exe", "/c", exe, *args]
+        return [exe, *args]
+
+    def _normalize_error(self, stderr: str, stdout: str, workspace: str) -> str:
+        merged = "\n".join(part for part in (stderr, stdout) if part).strip()
+        lower = merged.lower()
+        if "not inside a trusted directory" in lower:
+            return (
+                "현재 작업 폴더가 Codex 신뢰 대상이 아니라 실행이 막혔습니다.\n"
+                "작업 폴더를 git 저장소로 바꾸거나 신뢰된 폴더로 설정해주세요.\n"
+                f"현재 작업 폴더: {workspace or '(not set)'}"
+            )
+        return stderr or stdout or "Codex CLI failed."
+
+    def _clean_output(self, text: str) -> str:
+        if not text:
+            return text
+
+        noise_markers = (
+            "Reading additional input from stdin...",
+            "startup remote plugin sync failed",
+            "failed to warm featured plugin ids cache",
+            "WARN codex_core::",
+            "WARN codex_analytics::",
+            "tokens used",
+            "<html>",
+            "</html>",
+            "__cf_chl_opt",
+            "Enable JavaScript and cookies to continue",
+        )
+
+        cleaned: list[str] = []
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                if cleaned and cleaned[-1] != "":
+                    cleaned.append("")
+                continue
+            if any(marker in stripped for marker in noise_markers):
+                continue
+            if stripped.startswith("2024-") and "WARN " in stripped:
+                continue
+            if stripped.startswith("2025-") and "WARN " in stripped:
+                continue
+            if stripped.startswith("2026-") and "WARN " in stripped:
+                continue
+            cleaned.append(line)
+
+        result = "\n".join(cleaned).strip()
+        return result or text.strip()
 
     async def _run_probe(self, command: list[str], cwd: str | None = None) -> tuple[int, str, str]:
         proc = await asyncio.create_subprocess_exec(
@@ -52,7 +136,7 @@ class CodexCLIProvider(AgentProvider):
             )
 
         try:
-            code, out, err = await self._run_probe([exe, "--version"])
+            code, out, err = await self._run_probe(self._build_command(exe, "--version"))
         except PermissionError:
             return ProviderCheck(
                 ok=False,
@@ -87,9 +171,9 @@ class CodexCLIProvider(AgentProvider):
             return ProviderCheck(ok=False, status="error", message="Codex CLI is not configured.")
 
         candidates = (
-            [exe, "auth", "status"],
-            [exe, "login", "status"],
-            [exe, "whoami"],
+            self._build_command(exe, "auth", "status"),
+            self._build_command(exe, "login", "status"),
+            self._build_command(exe, "whoami"),
         )
 
         observed_errors: list[str] = []
@@ -138,6 +222,7 @@ class CodexCLIProvider(AgentProvider):
             proc = await asyncio.create_subprocess_exec(
                 *command,
                 cwd=workspace or None,
+                stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -153,21 +238,29 @@ class CodexCLIProvider(AgentProvider):
 
         self._running[session_context.session_id] = proc
         try:
-            out, err = await asyncio.wait_for(proc.communicate(), timeout=self.config.timeout_seconds)
+            out, err = await asyncio.wait_for(
+                proc.communicate(prompt.encode("utf-8")),
+                timeout=self.config.timeout_seconds,
+            )
         except asyncio.TimeoutError:
             await self.cancel(session_context.session_id)
             return RunResult(ok=False, output="", error="Codex CLI timed out.", command=command)
         finally:
             self._running.pop(session_context.session_id, None)
 
-        stdout = out.decode("utf-8", errors="replace").strip()
+        stdout = self._clean_output(out.decode("utf-8", errors="replace").strip())
         stderr = err.decode("utf-8", errors="replace").strip()
 
         if proc.returncode == 0 and stdout:
             return RunResult(ok=True, output=stdout, command=command)
         if proc.returncode == 0:
             return RunResult(ok=True, output="Codex completed successfully but returned no text.", command=command)
-        return RunResult(ok=False, output=stdout, error=stderr or "Codex CLI failed.", command=command)
+        return RunResult(
+            ok=False,
+            output=stdout,
+            error=self._normalize_error(stderr, stdout, workspace),
+            command=command,
+        )
 
     async def cancel(self, session_id: str) -> None:
         proc = self._running.pop(session_id, None)
