@@ -11,6 +11,8 @@ def test_config_store_round_trip(tmp_path: Path) -> None:
         telegram_allowed_user_ids=["1", "2"],
         workspace_path=str(tmp_path),
         default_template="coding",
+        translation_enabled=True,
+        response_format="1. 문제 요약\n2. 원인",
     )
     secrets = BridgeSecrets(telegram_bot_token="abc123")
 
@@ -23,4 +25,6 @@ def test_config_store_round_trip(tmp_path: Path) -> None:
     assert loaded_config.bot_name == "Test Bot"
     assert loaded_config.telegram_allowed_user_ids == ["1", "2"]
     assert loaded_config.default_template == "coding"
+    assert loaded_config.translation_enabled is True
+    assert loaded_config.response_format == "1. 문제 요약\n2. 원인"
     assert loaded_secrets.telegram_bot_token == "abc123"

@@ -16,8 +16,10 @@ class BridgeConfig(BaseModel):
     codex_cli_path: str = ""
     workspace_path: str = ""
     default_template: str = "assistant"
+    translation_enabled: bool = False
     system_rules: str = ""
     response_style: str = ""
+    response_format: str = ""
     working_style: str = ""
     allowed_guidance: str = ""
     blocked_guidance: str = ""
@@ -46,6 +48,11 @@ class TemplatePreset(BaseModel):
     name: str
     system_rules: str
     response_style: str
+    response_format: str
+    policy_summary: str = ""
+    runtime_rules: list[str] = Field(default_factory=list)
+    workspace_context: Literal["optional", "prefer", "required"] = "optional"
+    history_window: int = 8
     working_style: str
     allowed_guidance: str
     blocked_guidance: str

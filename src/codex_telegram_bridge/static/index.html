@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>코덱스 텔레그램 브리지</title>
+  <title>Codex Telegram Bridge</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
@@ -16,6 +16,7 @@
       --accent-2: #e0a74b;
       --accent-soft: rgba(20, 125, 100, 0.1);
       --danger-soft: rgba(184, 72, 55, 0.08);
+      --warning-soft: rgba(224, 167, 75, 0.18);
       --shadow: 0 18px 40px rgba(53, 43, 24, 0.08);
     }
     body {
@@ -93,6 +94,12 @@
     textarea {
       min-height: 84px;
       resize: vertical;
+    }
+    .format-box {
+      min-height: 118px;
+    }
+    .policy-box {
+      min-height: 140px;
     }
     .two {
       display: grid;
@@ -199,6 +206,32 @@
     .success {
       background: var(--accent-soft);
     }
+    .warning {
+      background: var(--warning-soft);
+    }
+    .inline-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .inline-check input {
+      width: auto;
+      margin: 0;
+    }
+    .inline-check label {
+      margin: 0;
+      font-weight: 600;
+    }
+    ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
     @media (max-width: 880px) {
       .grid { grid-template-columns: 1fr; }
       .two { grid-template-columns: 1fr; }
@@ -210,55 +243,55 @@
 <body>
   <div class="wrap">
     <div class="hero">
-      <h1>코덱스 텔레그램 브리지</h1>
-      <p>텔레그램 봇, 작업 폴더, Codex CLI 연결을 이 화면 한 곳에서 설정합니다.</p>
+      <h1>Codex Telegram Bridge</h1>
+      <p>텔레그램 봇, 작업 폴더, Codex CLI 연결을 한 화면에서 설정하는 로컬 브리지입니다.</p>
       <div class="pill-row">
         <div class="pill">1. 봇 토큰 입력</div>
-        <div class="pill">2. 내 Telegram ID 입력</div>
-        <div class="pill">3. 작업 폴더 지정</div>
-        <div class="pill">4. 저장 후 봇 테스트</div>
+        <div class="pill">2. 허용 사용자 지정</div>
+        <div class="pill">3. 작업 폴더 선택</div>
+        <div class="pill">4. 진단 확인 후 바로 사용</div>
       </div>
     </div>
 
     <div class="grid">
       <section class="panel">
         <h2>브리지 설정</h2>
-        <p class="section-copy">왼쪽만 채워도 기본 동작은 됩니다. 막히면 오른쪽 진단에서 Codex 설치와 로그인 상태를 먼저 보세요.</p>
+        <p class="section-copy">이제 템플릿은 말투만 바꾸는 프리셋이 아니라 출력 구조까지 바꾸는 기능으로 동작합니다.</p>
 
         <div class="status-banner">
           <strong>빠른 안내</strong>
-          `Allowed User IDs`에는 내 텔레그램 숫자 ID를 넣고, `Workspace Path`에는 Codex가 작업할 폴더를 넣으면 됩니다.
+          `Allowed User IDs`에는 본인 텔레그램 숫자 ID를 넣고, `Workspace Path`에는 Codex가 작업할 프로젝트 폴더를 지정하세요.
         </div>
 
         <div class="field">
           <label for="bot_name">봇 이름</label>
-          <input id="bot_name" placeholder="예: jhsoft_bot" />
-          <small>텔레그램에서 보거나 구분할 이름입니다.</small>
+          <input id="bot_name" placeholder="예: Codex Secretary Bot" />
+          <small>텔레그램에서 구분하기 쉬운 이름으로 정하면 됩니다.</small>
         </div>
 
         <div class="two">
           <div class="field">
             <label for="token">텔레그램 봇 토큰</label>
-            <input id="token" type="password" placeholder="BotFather가 준 토큰" />
-            <small>`@BotFather`에서 받은 긴 문자열을 그대로 붙여넣으세요.</small>
+            <input id="token" type="password" placeholder="새 토큰을 입력하거나 비워두세요" />
+            <small id="tokenHint">저장된 토큰이 있으면 가려진 상태로 표시됩니다. 비워두고 저장하면 기존 토큰을 유지합니다.</small>
           </div>
           <div class="field">
-            <label for="allowed">허용할 사용자 ID</label>
+            <label for="allowed">허용 사용자 ID</label>
             <input id="allowed" placeholder="예: 123456789 또는 123,456" />
-            <small>내 텔레그램 숫자 ID입니다. 여러 명이면 쉼표로 구분합니다.</small>
+            <small>쉼표로 여러 명을 넣을 수 있지만, 1차는 개인 사용 기준을 권장합니다.</small>
           </div>
         </div>
 
         <div class="two">
           <div class="field">
             <label for="workspace_path">작업 폴더 경로</label>
-            <input id="workspace_path" placeholder="예: D:\projects\tele-bot" />
-            <small>Codex가 파일을 읽고 작업할 실제 폴더입니다.</small>
+            <input id="workspace_path" placeholder="예: D:\projects\my-app" />
+            <small>드라이브 전체가 아니라 실제 프로젝트 루트 폴더를 지정하는 편이 좋습니다.</small>
           </div>
           <div class="field">
-            <label for="codex_cli_path">Codex CLI 경로 (선택)</label>
+            <label for="codex_cli_path">Codex CLI 경로</label>
             <input id="codex_cli_path" placeholder="비워두면 자동 탐지" />
-            <small>보통 비워둬도 됩니다. 자동 탐지가 안 될 때만 `codex.cmd` 또는 `codex.exe` 경로를 넣으세요.</small>
+            <small>자동 탐지가 되지 않을 때만 `codex.cmd` 또는 `codex.exe` 경로를 넣으세요.</small>
           </div>
         </div>
 
@@ -266,7 +299,7 @@
           <div class="field">
             <label for="template">기본 템플릿</label>
             <select id="template"></select>
-            <small>봇의 기본 말투와 작업 스타일입니다.</small>
+            <small>템플릿마다 강제되는 응답 섹션 구성이 다릅니다.</small>
           </div>
           <div class="field">
             <label for="timeout_seconds">응답 제한 시간(초)</label>
@@ -279,9 +312,15 @@
               <option value="hidden">가리기</option>
               <option value="visible">보이기</option>
             </select>
-            <small>현재 입력한 토큰을 잠깐 확인할 때만 켜세요.</small>
+            <small>화면에서 입력 중인 값만 잠깐 확인할 때 사용하세요.</small>
           </div>
         </div>
+
+        <div class="inline-check">
+          <input id="translation_enabled" type="checkbox" />
+          <label for="translation_enabled">한국어 입력을 영어로 번역해서 보조 프롬프트에 함께 넣기</label>
+        </div>
+        <p class="hint">기본값은 꺼짐입니다. 일반 사용자는 끈 상태로 시작하고, 특정 환경에서만 필요할 때 켜는 편이 안전합니다.</p>
 
         <label for="system_rules">시스템 규칙</label>
         <textarea id="system_rules"></textarea>
@@ -289,18 +328,24 @@
         <label for="response_style">응답 스타일</label>
         <textarea id="response_style"></textarea>
 
-        <label for="working_style">작업 스타일</label>
+        <label for="response_format">응답 포맷</label>
+        <textarea id="response_format" class="format-box"></textarea>
+
+        <label for="template_policy">템플릿 정책 미리보기</label>
+        <textarea id="template_policy" class="policy-box" readonly></textarea>
+
+        <label for="working_style">작업 방식</label>
         <textarea id="working_style"></textarea>
 
-        <label for="allowed_guidance">허용 가이드</label>
+        <label for="allowed_guidance">허용 지침</label>
         <textarea id="allowed_guidance"></textarea>
 
-        <label for="blocked_guidance">제한 가이드</label>
+        <label for="blocked_guidance">금지 지침</label>
         <textarea id="blocked_guidance"></textarea>
 
         <div class="actions">
           <button class="primary" id="saveBtn">설정 저장</button>
-          <button class="secondary" id="workspaceBtn">폴더 확인</button>
+          <button class="secondary" id="workspaceBtn">작업 폴더 점검</button>
           <button class="secondary" id="restartBtn">봇 다시 시작</button>
         </div>
         <p class="hint" id="saveStatus"></p>
@@ -308,18 +353,27 @@
 
       <section class="panel">
         <h2>연결 진단</h2>
-        <p class="section-copy">여기가 모두 정상이어야 텔레그램에서 요청을 보냈을 때 실제로 Codex가 답할 수 있습니다.</p>
-        <div class="diagnostic">
+        <p class="section-copy">설치 상태와 로그인 여부, 작업 폴더 위험 신호, 현재 봇 서비스 상태를 여기서 확인할 수 있습니다.</p>
+        <div class="diagnostic" id="botDiagWrap">
+          <strong>텔레그램 봇 상태</strong>
+          <div class="mono" id="botDiag">불러오는 중...</div>
+        </div>
+        <div class="diagnostic" id="workspaceDiagWrap">
+          <strong>작업 폴더 점검</strong>
+          <div class="mono" id="workspaceDiag">불러오는 중...</div>
+          <ul id="workspaceWarnings"></ul>
+        </div>
+        <div class="diagnostic" id="installDiagWrap">
           <strong>Codex CLI 설치 상태</strong>
           <div class="mono" id="installDiag">불러오는 중...</div>
         </div>
-        <div class="diagnostic">
+        <div class="diagnostic" id="authDiagWrap">
           <strong>Codex 로그인 상태</strong>
           <div class="mono" id="authDiag">불러오는 중...</div>
         </div>
         <div class="diagnostic">
           <strong>템플릿 미리보기</strong>
-          <div class="mono" id="templateDiag">템플릿을 고르면 설명이 여기 표시됩니다.</div>
+          <div class="mono" id="templateDiag">템플릿을 선택하면 형식이 여기에 표시됩니다.</div>
         </div>
       </section>
     </div>
@@ -332,15 +386,37 @@
       return document.getElementById(id);
     }
 
+    function setCardStatus(element, status) {
+      const card = element.parentElement;
+      card.classList.remove("success", "warning", "danger");
+      if (status === "ok" || status === "running") card.classList.add("success");
+      if (status === "warning" || status === "skipped") card.classList.add("warning");
+      if (status === "error") card.classList.add("danger");
+    }
+
     function diagText(diag) {
-      const statusMap = {
-        ok: "정상",
-        warning: "주의",
-        error: "오류",
-      };
+      const statusMap = { ok: "정상", warning: "주의", error: "오류" };
       const lines = [`${statusMap[diag.status] || diag.status}: ${diag.message}`];
       for (const item of diag.details || []) {
         lines.push(`- ${item}`);
+      }
+      return lines.join("\n");
+    }
+
+    function workspaceText(diag) {
+      const statusMap = { ok: "정상", warning: "주의", error: "오류" };
+      const lines = [`${statusMap[diag.status] || diag.status}: ${diag.message}`];
+      if (diag.resolved) {
+        lines.push(`경로: ${diag.resolved}`);
+      }
+      return lines.join("\n");
+    }
+
+    function botStateText(botService) {
+      const stateMap = { idle: "대기", skipped: "건너뜀", running: "실행 중", error: "오류" };
+      const lines = [`상태: ${stateMap[botService.status] || botService.status}`];
+      if (botService.error) {
+        lines.push(`최근 오류: ${botService.error}`);
       }
       return lines.join("\n");
     }
@@ -353,8 +429,10 @@
           codex_cli_path: byId("codex_cli_path").value,
           workspace_path: byId("workspace_path").value,
           default_template: byId("template").value,
+          translation_enabled: byId("translation_enabled").checked,
           system_rules: byId("system_rules").value,
           response_style: byId("response_style").value,
+          response_format: byId("response_format").value,
           working_style: byId("working_style").value,
           allowed_guidance: byId("allowed_guidance").value,
           blocked_guidance: byId("blocked_guidance").value,
@@ -370,12 +448,28 @@
       const preset = templates[key];
       if (!preset) return;
       byId("templateDiag").textContent =
-        `${preset.name}\n\n시스템 규칙: ${preset.system_rules}\n\n응답 스타일: ${preset.response_style}\n\n작업 스타일: ${preset.working_style}`;
+        `${preset.name}\n\n응답 포맷:\n${preset.response_format}\n\n정책 요약: ${preset.policy_summary}`;
+      byId("template_policy").value =
+        `정책 요약: ${preset.policy_summary}\n\n` +
+        `워크스페이스 정책: ${preset.workspace_context}\n` +
+        `대화 기록 길이: ${preset.history_window}\n\n` +
+        `런타임 규칙:\n- ${(preset.runtime_rules || []).join("\n- ")}`;
       if (overwriteFields || !byId("system_rules").value.trim()) byId("system_rules").value = preset.system_rules;
       if (overwriteFields || !byId("response_style").value.trim()) byId("response_style").value = preset.response_style;
+      if (overwriteFields || !byId("response_format").value.trim()) byId("response_format").value = preset.response_format;
       if (overwriteFields || !byId("working_style").value.trim()) byId("working_style").value = preset.working_style;
       if (overwriteFields || !byId("allowed_guidance").value.trim()) byId("allowed_guidance").value = preset.allowed_guidance;
       if (overwriteFields || !byId("blocked_guidance").value.trim()) byId("blocked_guidance").value = preset.blocked_guidance;
+    }
+
+    function renderWorkspaceWarnings(items) {
+      const target = byId("workspaceWarnings");
+      target.innerHTML = "";
+      for (const warning of items || []) {
+        const li = document.createElement("li");
+        li.textContent = warning;
+        target.appendChild(li);
+      }
     }
 
     async function loadState() {
@@ -393,26 +487,35 @@
       });
 
       byId("bot_name").value = data.config.bot_name || "";
-      byId("token").value = data.secrets.telegram_bot_token || "";
+      byId("token").value = "";
       byId("allowed").value = (data.config.telegram_allowed_user_ids || []).join(",");
       byId("codex_cli_path").value = data.config.codex_cli_path || "";
       byId("workspace_path").value = data.config.workspace_path || "";
       byId("template").value = data.config.default_template || "assistant";
+      byId("translation_enabled").checked = Boolean(data.config.translation_enabled);
       byId("system_rules").value = data.config.system_rules || "";
       byId("response_style").value = data.config.response_style || "";
+      byId("response_format").value = data.config.response_format || "";
       byId("working_style").value = data.config.working_style || "";
       byId("allowed_guidance").value = data.config.allowed_guidance || "";
       byId("blocked_guidance").value = data.config.blocked_guidance || "";
       byId("timeout_seconds").value = data.config.timeout_seconds || 600;
 
+      byId("tokenHint").textContent = data.secrets.has_telegram_bot_token
+        ? `저장된 토큰: ${data.secrets.masked_telegram_bot_token} (비워두고 저장하면 유지됩니다)`
+        : "저장된 토큰이 없습니다. 새 토큰을 입력하세요.";
+
       byId("installDiag").textContent = diagText(data.diagnostics.install);
       byId("authDiag").textContent = diagText(data.diagnostics.auth);
+      byId("workspaceDiag").textContent = workspaceText(data.diagnostics.workspace);
+      byId("botDiag").textContent = botStateText(data.bot_service);
+      renderWorkspaceWarnings(data.diagnostics.workspace.warnings);
       applyTemplate(byId("template").value);
 
-      byId("installDiag").parentElement.classList.toggle("success", data.diagnostics.install.status === "ok");
-      byId("installDiag").parentElement.classList.toggle("danger", data.diagnostics.install.status === "error");
-      byId("authDiag").parentElement.classList.toggle("success", data.diagnostics.auth.status === "ok");
-      byId("authDiag").parentElement.classList.toggle("danger", data.diagnostics.auth.status === "error");
+      setCardStatus(byId("installDiag"), data.diagnostics.install.status);
+      setCardStatus(byId("authDiag"), data.diagnostics.auth.status);
+      setCardStatus(byId("workspaceDiag"), data.diagnostics.workspace.status);
+      setCardStatus(byId("botDiag"), data.bot_service.status);
     }
 
     byId("template").addEventListener("change", (event) => {
@@ -429,8 +532,11 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formState()),
       });
+      const data = await response.json();
       if (response.ok) {
-        byId("saveStatus").textContent = "설정을 저장했습니다.";
+        byId("saveStatus").textContent = data.bot_service?.error
+          ? `설정은 저장됐지만 봇 시작 오류가 있습니다: ${data.bot_service.error}`
+          : "설정을 저장했습니다.";
         await loadState();
       } else {
         byId("saveStatus").textContent = "설정 저장에 실패했습니다.";
@@ -444,12 +550,18 @@
         body: JSON.stringify({ workspace_path: byId("workspace_path").value }),
       });
       const data = await response.json();
-      byId("saveStatus").textContent = `폴더 확인: exists=${data.exists}, is_dir=${data.is_dir}, path=${data.resolved}`;
+      byId("workspaceDiag").textContent = workspaceText(data);
+      renderWorkspaceWarnings(data.warnings);
+      setCardStatus(byId("workspaceDiag"), data.status);
+      byId("saveStatus").textContent = "작업 폴더 점검을 마쳤습니다.";
     });
 
     byId("restartBtn").addEventListener("click", async () => {
       const response = await fetch("/api/restart-bot", { method: "POST" });
-      byId("saveStatus").textContent = response.ok ? "봇 재시작을 요청했습니다." : "봇 재시작에 실패했습니다.";
+      const data = await response.json();
+      byId("saveStatus").textContent = data.bot_service?.error
+        ? `봇 시작 오류: ${data.bot_service.error}`
+        : "봇 재시작을 요청했습니다.";
       await loadState();
     });
 

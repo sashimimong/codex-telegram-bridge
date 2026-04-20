@@ -34,6 +34,11 @@ def test_resolve_executable_prefers_non_windowsapps_install(monkeypatch) -> None
     monkeypatch.setattr(shutil, "which", fake_which)
 
     provider = CodexCLIProvider(BridgeConfig())
+    monkeypatch.setattr(
+        provider,
+        "_resolve_npm_bundled_exe",
+        lambda codex_cmd: r"C:\nvm4w\nodejs\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex\codex.exe",
+    )
 
     assert provider.resolve_executable().endswith(r"codex\codex.exe")
 
